@@ -1,8 +1,18 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand-blue: #2563eb;
+  --brand-cyan: #22d3ee;
+  --brand-navy: #081225;
+}
+
+html.dark {
+  --background: #030712;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -12,15 +22,125 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.22);
+  color: inherit;
+}
+
+html.dark .bg-white {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-blue-50,
+html.dark .bg-purple-50,
+html.dark .bg-green-50,
+html.dark .bg-orange-50,
+html.dark .bg-yellow-50 {
+  background-color: rgba(15, 23, 42, 0.78) !important;
+}
+
+html.dark .from-blue-50,
+html.dark .from-indigo-50,
+html.dark .from-purple-50,
+html.dark .from-pink-50,
+html.dark .from-green-50,
+html.dark .from-emerald-50,
+html.dark .from-orange-50,
+html.dark .from-red-50,
+html.dark .from-sky-50,
+html.dark .from-yellow-50 {
+  --tw-gradient-from: rgba(15, 23, 42, 0.92) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(15, 23, 42, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+}
+
+html.dark .via-white,
+html.dark .via-indigo-50,
+html.dark .via-purple-50,
+html.dark .via-blue-50 {
+  --tw-gradient-via: rgba(15, 23, 42, 0.88) var(--tw-gradient-via-position) !important;
+  --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+html.dark .to-blue-50,
+html.dark .to-indigo-50,
+html.dark .to-purple-50,
+html.dark .to-pink-50,
+html.dark .to-green-50,
+html.dark .to-emerald-50,
+html.dark .to-orange-50,
+html.dark .to-red-50,
+html.dark .to-sky-50,
+html.dark .to-yellow-50 {
+  --tw-gradient-to: rgba(30, 41, 59, 0.96) var(--tw-gradient-to-position) !important;
+}
+
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark .border-gray-200,
+html.dark .border-blue-200,
+html.dark .border-purple-200,
+html.dark .border-green-200,
+html.dark .border-orange-200,
+html.dark .border-yellow-200 {
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+html.dark .border-b,
+html.dark .border-t {
+  border-color: rgba(51, 65, 85, 0.9) !important;
+}
+
+html.dark .shadow,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl,
+html.dark .shadow-2xl {
+  box-shadow:
+    0 24px 60px rgba(2, 6, 23, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+html.dark .rounded-lg,
+html.dark .rounded-xl,
+html.dark .rounded-2xl,
+html.dark .rounded-3xl {
+  backdrop-filter: blur(14px);
+}
+
+input {
+  color: black;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: #e2e8f0;
+  background-color: rgba(2, 6, 23, 0.82) !important;
+  border-color: rgba(71, 85, 105, 0.75) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8;
 }

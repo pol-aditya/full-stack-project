@@ -14,14 +14,14 @@ export default function Step2ResumeFlow() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-purple-50 to-pink-50 py-20">
+      <section className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-slate-950 dark:to-slate-900 py-20 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="text-6xl mb-4">📄</div>
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">Step 2: Upload Your Resume</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">Step 2: Upload Your Resume</h1>
+            <p className="text-xl text-gray-600 dark:text-slate-300 max-w-2xl mx-auto">
               Share your resume and get AI-powered analysis for instant improvement suggestions
             </p>
           </div>
@@ -29,9 +29,9 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* Upload Process */}
-      <section className="py-16">
+      <section className="py-16 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Upload Process</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Upload Process</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -50,10 +50,10 @@ export default function Step2ResumeFlow() {
                 desc: 'Your resume data is encrypted and secure'
               }
             ].map((item, i) => (
-              <div key={i} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-8 border border-purple-200">
+              <div key={i} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-slate-900 dark:to-slate-950 rounded-lg p-8 border border-purple-200 dark:border-slate-800">
                 <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-slate-300">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -61,9 +61,9 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* What We Analyze */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-slate-900/60 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">What We Analyze</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">What We Analyze</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
@@ -87,12 +87,12 @@ export default function Step2ResumeFlow() {
                 features: ['Top skills identified', 'Relevant keywords', 'Skill gaps', 'Industry trends']
               }
             ].map((item, i) => (
-              <div key={i} className="bg-white rounded-lg p-6 border border-gray-200">
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800">
                 <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{item.title}</h3>
                 <ul className="space-y-2">
                   {item.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-3 text-gray-700">
+                    <li key={j} className="flex items-center gap-3 text-gray-700 dark:text-slate-300">
                       <span className="text-purple-600 font-bold">✓</span>
                       {feature}
                     </li>
@@ -105,9 +105,9 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* Benefits */}
-      <section className="py-16">
+      <section className="py-16 dark:bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Why Upload Your Resume?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Why Upload Your Resume?</h2>
           <div className="space-y-6">
             {[
               {
@@ -135,9 +135,9 @@ export default function Step2ResumeFlow() {
                 desc: 'Better recommendations based on your resume content'
               }
             ].map((item, i) => (
-              <div key={i} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border-l-4 border-purple-600">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
+              <div key={i} className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-900 dark:to-slate-950 rounded-lg p-6 border-l-4 border-purple-600 dark:border-purple-500">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-slate-300">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -145,11 +145,11 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* Multiple Resumes */}
-      <section className="py-16 bg-purple-50">
+      <section className="py-16 bg-purple-50 dark:bg-slate-900/60 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Upload Multiple Resumes</h2>
-          <div className="bg-white rounded-lg p-8 border border-purple-200">
-            <p className="text-gray-700 mb-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Upload Multiple Resumes</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-lg p-8 border border-purple-200 dark:border-slate-800">
+            <p className="text-gray-700 dark:text-slate-300 mb-4">
               You can upload multiple resume versions for different roles:
             </p>
             <div className="space-y-3">
@@ -159,7 +159,7 @@ export default function Step2ResumeFlow() {
                 '🔧 Technical-focused - emphasizing technical skills',
                 '🚀 Startup version - for fast-paced environments'
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 text-gray-700">
+                <div key={i} className="flex items-center gap-3 text-gray-700 dark:text-slate-300">
                   <span className="text-purple-600 font-bold">•</span>
                   {item}
                 </div>
@@ -170,9 +170,9 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* Next Steps */}
-      <section className="py-16">
+      <section className="py-16 dark:bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Ready to Upload?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Ready to Upload?</h2>
           
           <div className="space-y-4 mb-8">
             {[
@@ -181,13 +181,13 @@ export default function Step2ResumeFlow() {
               { step: '3', title: 'Drag & drop or select file', note: 'Upload completes instantly' },
               { step: '4', title: 'View analysis results', note: 'See ATS score and recommendations' }
             ].map((item, i) => (
-              <div key={i} className="flex gap-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <div key={i} className="flex gap-4 bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800">
                 <div className="bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">
                   {item.step}
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900">{item.title}</h4>
-                  <p className="text-gray-600 text-sm">{item.note}</p>
+                  <h4 className="font-bold text-gray-900 dark:text-white">{item.title}</h4>
+                  <p className="text-gray-600 dark:text-slate-300 text-sm">{item.note}</p>
                 </div>
               </div>
             ))}
@@ -202,7 +202,7 @@ export default function Step2ResumeFlow() {
             </Link>
             <Link
               href="/flows/step-1-profile"
-              className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold py-4 px-8 rounded-lg transition"
+              className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-900 font-bold py-4 px-8 rounded-lg transition"
             >
               Back to Step 1
             </Link>
@@ -211,9 +211,9 @@ export default function Step2ResumeFlow() {
       </section>
 
       {/* Journey Map */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-slate-900/60 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Your Journey</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Your Journey</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
               { num: '1', title: 'Create Profile', active: false },
@@ -221,21 +221,27 @@ export default function Step2ResumeFlow() {
               { num: '3', title: 'Get Recommendations', active: false },
               { num: '4', title: 'Prepare & Apply', active: false }
             ].map((step, i) => (
-              <div
+              <Link
                 key={i}
-                className={`text-center p-6 rounded-lg transition ${
+                href={
+                  step.num === '1' ? '/flows/step-1-profile' :
+                  step.num === '2' ? '/flows/step-2-resume' :
+                  step.num === '3' ? '/flows/step-3-recommendations' :
+                  '/flows/step-4-prepare'
+                }
+                className={`block text-center p-6 rounded-lg transition duration-200 hover:-translate-y-1 hover:shadow-xl cursor-pointer ${
                   step.active
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-950/30'
+                    : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300'
                 }`}
               >
                 <div className={`rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 font-bold text-xl ${
-                  step.active ? 'bg-white text-purple-600' : 'bg-gray-100 text-gray-600'
+                  step.active ? 'bg-slate-950/80 text-white' : 'bg-gray-100 dark:bg-slate-800 dark:border dark:border-slate-600 text-gray-600 dark:text-slate-300'
                 }`}>
                   {step.num}
                 </div>
                 <h4 className="font-bold">{step.title}</h4>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
