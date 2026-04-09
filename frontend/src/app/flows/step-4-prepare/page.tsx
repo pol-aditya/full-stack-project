@@ -14,14 +14,14 @@ export default function Step4PrepareApplyFlow() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-orange-50 to-red-50 py-20">
+      <section className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-950 dark:to-slate-900 py-20 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="text-6xl mb-4">🚀</div>
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">Step 4: Prepare & Apply</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">Step 4: Prepare & Apply</h1>
+            <p className="text-xl text-gray-600 dark:text-slate-300 max-w-2xl mx-auto">
               Practice, Perfect, and Apply for your Dream Jobs with Confidence
             </p>
           </div>
@@ -29,9 +29,9 @@ export default function Step4PrepareApplyFlow() {
       </section>
 
       {/* Preparation Options */}
-      <section className="py-16">
+      <section className="py-16 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">How to Prepare</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">How to Prepare</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
@@ -59,10 +59,10 @@ export default function Step4PrepareApplyFlow() {
                 stats: ['Job-specific optimization', 'ATS score tracking', 'Keyword matching']
               }
             ].map((item, i) => (
-              <div key={i} className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-8 border border-orange-200">
+              <div key={i} className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-900 dark:to-slate-950 rounded-lg p-8 border border-orange-200 dark:border-slate-800">
                 <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 mb-4">{item.desc}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-slate-300 mb-4">{item.desc}</p>
                 <div className="space-y-1">
                   {item.stats.map((stat, j) => (
                     <div key={j} className="text-sm text-gray-700 flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function Step4PrepareApplyFlow() {
       </section>
 
       {/* Interview Rounds Details */}
-      <section className="py-16">
+      <section className="py-16 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Master All Interview Rounds</h2>
           
@@ -234,7 +234,7 @@ export default function Step4PrepareApplyFlow() {
       {/* Success Metrics */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Track Your Success</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Track Your Success</h2>
           
           <div className="space-y-4">
             {[
@@ -243,10 +243,10 @@ export default function Step4PrepareApplyFlow() {
               { metric: 'Interview Rate', target: 'Target 5-10%', unit: 'Of applications' },
               { metric: 'Job Search Time', target: '3-6 months', unit: 'Average duration' }
             ].map((item, i) => (
-              <div key={i} className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-6 border border-orange-200 flex gap-4 items-center">
+              <div key={i} className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-slate-900 dark:to-slate-950 rounded-lg p-6 border border-orange-200 dark:border-slate-800 flex gap-4 items-center">
                 <div className="flex-grow">
-                  <h4 className="font-bold text-gray-900">{item.metric}</h4>
-                  <p className="text-gray-600 text-sm">{item.unit}</p>
+                  <h4 className="font-bold text-gray-900 dark:text-white">{item.metric}</h4>
+                  <p className="text-gray-600 dark:text-slate-300 text-sm">{item.unit}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-orange-600">{item.target}</div>
@@ -258,9 +258,9 @@ export default function Step4PrepareApplyFlow() {
       </section>
 
       {/* Success Stories */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-slate-900/60 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Success Stories</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Success Stories</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -280,10 +280,10 @@ export default function Step4PrepareApplyFlow() {
                 time: 'Landed job in 4 weeks'
               }
             ].map((item, i) => (
-              <div key={i} className="bg-white rounded-lg p-6 border border-gray-200 text-center">
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-lg p-6 border border-gray-200 dark:border-slate-800 text-center">
                 <div className="text-2xl mb-3">⭐⭐⭐⭐⭐</div>
-                <h4 className="font-bold text-gray-900 mb-2">{item.name}</h4>
-                <p className="text-gray-600 text-sm mb-4">{item.story}</p>
+                <h4 className="font-bold text-gray-900 dark:text-white mb-2">{item.name}</h4>
+                <p className="text-gray-600 dark:text-slate-300 text-sm mb-4">{item.story}</p>
                 <p className="text-orange-600 font-semibold text-sm">{item.time}</p>
               </div>
             ))}
@@ -316,9 +316,9 @@ export default function Step4PrepareApplyFlow() {
       </section>
 
       {/* Journey Map */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-slate-950 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Your Journey Complete!</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Your Journey Complete!</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
               { num: '1', title: 'Create Profile', active: false },
@@ -326,25 +326,31 @@ export default function Step4PrepareApplyFlow() {
               { num: '3', title: 'Get Recommendations', active: false },
               { num: '4', title: 'Prepare & Apply', active: true }
             ].map((step, i) => (
-              <div
+              <Link
                 key={i}
-                className={`text-center p-6 rounded-lg transition ${
+                href={
+                  step.num === '1' ? '/flows/step-1-profile' :
+                  step.num === '2' ? '/flows/step-2-resume' :
+                  step.num === '3' ? '/flows/step-3-recommendations' :
+                  '/flows/step-4-prepare'
+                }
+                className={`block text-center p-6 rounded-lg transition duration-200 hover:-translate-y-1 hover:shadow-xl cursor-pointer ${
                   step.active
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
+                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-950/30'
+                    : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300'
                 }`}
               >
                 <div className={`rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 font-bold text-xl ${
-                  step.active ? 'bg-white text-orange-600' : 'bg-gray-100 text-gray-600'
+                  step.active ? 'bg-slate-950/80 text-white' : 'bg-gray-100 dark:bg-slate-800 dark:border dark:border-slate-600 text-gray-600 dark:text-slate-300'
                 }`}>
                   {step.num}
                 </div>
                 <h4 className="font-bold">{step.title}</h4>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center mt-12">
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-slate-300 mb-6">
               You've explored the complete journey. Now it's time to take action!
             </p>
             <Link

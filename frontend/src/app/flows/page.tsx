@@ -3,24 +3,67 @@
 import Link from 'next/link';
 
 export default function FlowsPage() {
+  const timelineItems = [
+    {
+      step: '01',
+      title: 'Step 1',
+      time: '5-10 min',
+      level: 'Beginner',
+      accent: 'from-blue-500 to-indigo-600',
+      border: 'border-blue-200',
+      badge: 'bg-blue-100 text-blue-700',
+      glow: 'from-blue-100 to-indigo-100'
+    },
+    {
+      step: '02',
+      title: 'Step 2',
+      time: '2-3 min',
+      level: 'Beginner',
+      accent: 'from-fuchsia-500 to-pink-600',
+      border: 'border-pink-200',
+      badge: 'bg-pink-100 text-pink-700',
+      glow: 'from-pink-100 to-fuchsia-100'
+    },
+    {
+      step: '03',
+      title: 'Step 3',
+      time: 'Ongoing',
+      level: 'All Levels',
+      accent: 'from-emerald-500 to-green-600',
+      border: 'border-green-200',
+      badge: 'bg-green-100 text-green-700',
+      glow: 'from-emerald-100 to-green-100'
+    },
+    {
+      step: '04',
+      title: 'Step 4',
+      time: '4 weeks',
+      level: 'All Levels',
+      accent: 'from-orange-500 to-red-500',
+      border: 'border-orange-200',
+      badge: 'bg-orange-100 text-orange-700',
+      glow: 'from-orange-100 to-red-100'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white transition-colors dark:bg-slate-950">
       {/* Header */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-20">
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-950 dark:to-slate-900 py-20 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">Job Search Journey</h1>
-          <p className="text-xl text-gray-600 max-w-2xl">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">Job Search Journey</h1>
+          <p className="text-xl text-gray-600 dark:text-slate-300 max-w-2xl">
             Follow our step-by-step guide to transform your career in just 4 weeks
           </p>
         </div>
       </section>
 
       {/* All Steps */}
-      <section className="py-20">
+      <section className="py-20 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-12">
             {/* Step 1 */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 border border-blue-200">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 border border-blue-200 dark:from-slate-900 dark:to-slate-950 dark:border-slate-800">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-center h-24 w-24 rounded-full bg-blue-600 text-white">
@@ -28,8 +71,8 @@ export default function FlowsPage() {
                   </div>
                 </div>
                 <div className="flex-grow">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Your Profile</h2>
-                  <p className="text-gray-600 mb-4">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Your Profile</h2>
+                  <p className="text-gray-600 dark:text-slate-300 mb-4">
                     Build a comprehensive profile with your domain, skills, and career interests. This foundation drives all our AI-powered recommendations.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -49,7 +92,7 @@ export default function FlowsPage() {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 border border-purple-200">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 border border-purple-200 dark:from-slate-900 dark:to-slate-950 dark:border-slate-800">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-center h-24 w-24 rounded-full bg-purple-600 text-white">
@@ -57,8 +100,8 @@ export default function FlowsPage() {
                   </div>
                 </div>
                 <div className="flex-grow">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Resume</h2>
-                  <p className="text-gray-600 mb-4">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Upload Your Resume</h2>
+                  <p className="text-gray-600 dark:text-slate-300 mb-4">
                     Share your resume and get instant AI analysis. Get ATS scores, quality feedback, and specific improvement recommendations.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -78,7 +121,7 @@ export default function FlowsPage() {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-8 border border-green-200">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-8 border border-green-200 dark:from-slate-900 dark:to-slate-950 dark:border-slate-800">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-center h-24 w-24 rounded-full bg-green-600 text-white">
@@ -86,8 +129,8 @@ export default function FlowsPage() {
                   </div>
                 </div>
                 <div className="flex-grow">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Get Recommendations</h2>
-                  <p className="text-gray-600 mb-4">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Get Recommendations</h2>
+                  <p className="text-gray-600 dark:text-slate-300 mb-4">
                     Receive personalized, AI-powered recommendations for resume improvements, job matching, and skill development tailored to your goals.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -107,7 +150,7 @@ export default function FlowsPage() {
             </div>
 
             {/* Step 4 */}
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-8 border border-orange-200">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-8 border border-orange-200 dark:from-slate-900 dark:to-slate-950 dark:border-slate-800">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-center h-24 w-24 rounded-full bg-orange-600 text-white">
@@ -115,8 +158,8 @@ export default function FlowsPage() {
                   </div>
                 </div>
                 <div className="flex-grow">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Prepare & Apply</h2>
-                  <p className="text-gray-600 mb-4">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Prepare & Apply</h2>
+                  <p className="text-gray-600 dark:text-slate-300 mb-4">
                     Practice with adaptive quizzes and mock interviews for all 4 rounds. Customize resumes and apply strategically with tracking.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -139,22 +182,48 @@ export default function FlowsPage() {
       </section>
 
       {/* Quick Stats */}
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gradient-to-br from-sky-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 py-20 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Timeline & Commitment</h2>
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-sky-300">
+              Journey Pace
+            </p>
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Timeline & Commitment</h2>
+            <p className="mt-3 text-base text-slate-600 dark:text-slate-300">
+              A quick view of how much time each stage needs and who it fits best.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { title: 'Step 1', time: '5-10 min', level: 'Beginner' },
-              { title: 'Step 2', time: '2-3 min', level: 'Beginner' },
-              { title: 'Step 3', time: 'Ongoing', level: 'All Levels' },
-              { title: 'Step 4', time: '4 weeks', level: 'All Levels' }
-            ].map((item, i) => (
-              <div key={i} className="bg-white rounded-lg p-6 border border-gray-200 text-center">
-                <h4 className="text-2xl font-bold text-gray-900 mb-2">{item.title}</h4>
-                <p className="text-gray-600 mb-3">{item.time}</p>
-                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {item.level}
-                </span>
+            {timelineItems.map((item) => (
+              <div
+                key={item.step}
+                className={`group relative overflow-hidden rounded-3xl border bg-white/95 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.28)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_32px_90px_rgba(15,23,42,0.4)] dark:bg-slate-900 dark:border-slate-800 ${item.border}`}
+              >
+                <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${item.accent}`} />
+                <div className={`absolute -right-10 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${item.glow} opacity-70 blur-2xl transition duration-300 group-hover:scale-125`} />
+                <div className="relative">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">
+                        {item.step}
+                      </p>
+                      <h4 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
+                        {item.title}
+                      </h4>
+                    </div>
+                    <div className={`rounded-2xl bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-lg ${item.accent}`}>
+                      {item.time}
+                    </div>
+                  </div>
+                  <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">
+                      Recommended For
+                    </p>
+                    <span className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-sm font-semibold ${item.badge}`}>
+                      {item.level}
+                    </span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -162,9 +231,9 @@ export default function FlowsPage() {
       </section>
 
       {/* Expected Outcomes */}
-      <section className="py-20">
+      <section className="py-20 dark:bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">What to Expect</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">What to Expect</h2>
           <div className="space-y-6">
             {[
               {
@@ -188,11 +257,11 @@ export default function FlowsPage() {
                 desc: 'Average job search time: 4-8 weeks'
               }
             ].map((item, i) => (
-              <div key={i} className="flex gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div key={i} className="flex gap-4 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
                 <div className="text-3xl flex-shrink-0">{item.icon}</div>
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-gray-600">{item.desc}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
+                  <p className="text-gray-600 dark:text-slate-300">{item.desc}</p>
                 </div>
               </div>
             ))}
