@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,7 +18,7 @@ export default function LoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setError('');
   };
 
@@ -43,21 +42,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4 transition-colors">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl transition-colors dark:bg-slate-900 dark:shadow-[0_30px_80px_rgba(2,6,23,0.65)]">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            🎯 JobSeeker AI
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+            JobSeeker AI
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-slate-300">
             {isLogin ? 'Welcome back' : 'Get started with us'}
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900/60 dark:bg-red-950/40">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
@@ -66,7 +65,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-200">
                 Full Name
               </label>
               <input
@@ -74,7 +73,7 @@ export default function LoginPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 placeholder="John Doe"
                 required={!isLogin}
               />
@@ -82,7 +81,7 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-200">
               Email Address
             </label>
             <input
@@ -90,14 +89,14 @@ export default function LoginPage() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               placeholder="you@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-200">
               Password
             </label>
             <input
@@ -105,8 +104,8 @@ export default function LoginPage() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-              placeholder="••••••••"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              placeholder="........"
               required
             />
           </div>
@@ -121,27 +120,55 @@ export default function LoginPage() {
         </form>
 
         {/* Toggle */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
-            <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-                setFormData({ email: '', password: '', name: '' });
-              }}
-              className="text-blue-600 hover:text-blue-700 font-semibold ml-1 transition"
-            >
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </button>
+        <div className="mt-6">
+          <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-slate-700 dark:bg-slate-950">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setError('');
+                  setFormData({ email: '', password: '', name: '' });
+                }}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                  isLogin
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:bg-white hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-sky-300'
+                }`}
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(false);
+                  setError('');
+                  setFormData({ email: '', password: '', name: '' });
+                }}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                  !isLogin
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:bg-white hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-sky-300'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+          <p className="mt-3 text-center text-sm text-gray-600 dark:text-slate-300">
+            {isLogin
+              ? 'New here? Choose Sign Up to create an account.'
+              : 'Already registered? Switch back to Login.'}
           </p>
         </div>
 
         {/* Demo Info */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs text-gray-600">
-            <span className="font-semibold text-blue-600">Demo Credentials:</span><br />
-            Email: demo@example.com<br />
+        <div className="mt-8 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-slate-700 dark:bg-slate-950/80">
+          <p className="text-xs text-gray-600 dark:text-slate-300">
+            <span className="font-semibold text-blue-600">Demo Credentials:</span>
+            <br />
+            Email: demo@example.com
+            <br />
             Password: demo123
           </p>
         </div>
