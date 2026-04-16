@@ -13,6 +13,7 @@ CREATE TABLE users (
   INDEX idx_users_role (role)
 );
 
+<<<<<<< HEAD
 CREATE TABLE job_posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   recruiter_id INT NOT NULL,
@@ -55,3 +56,6 @@ CREATE TABLE job_applications (
 SELECT * FROM users;
 SELECT * FROM job_posts;
 SELECT * FROM job_applications;
+=======
+SELECT * FROM users;
+>>>>>>> origin/main
