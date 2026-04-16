@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // ✅ IMPORTS FIRST
-const protect = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 const { registerUser, getTestUser, loginUser } = require("../controllers/userController");
 
 // ✅ ROUTES

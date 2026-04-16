@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 // 🔐 REGISTER
 const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
+  const normalizedRole = role || "employee";
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -13,7 +14,7 @@ const registerUser = async (req, res) => {
     const sql =
       "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
 
-    db.query(sql, [name, email, hashedPassword, role], (err, result) => {
+    db.query(sql, [name, email, hashedPassword, normalizedRole], (err, result) => {
       if (err) return res.status(500).json(err);
 
       res.json({ message: "User registered successfully" });
@@ -50,7 +51,7 @@ const loginUser = (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role || "employee" },
       process.env.JWT_SECRET || "dev_jwt_secret",
       { expiresIn: "1h" }
     );
@@ -62,7 +63,7 @@ const loginUser = (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: user.role || "employee",
       },
     });
   });

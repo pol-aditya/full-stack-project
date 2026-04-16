@@ -1,9 +1,112 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
+
+type ParseabilityChecks = Record<string, boolean>;
+
+interface ScoreComponent {
+  weight: number;
+  score: number;
+  weightedContribution?: number;
+  checks?: ParseabilityChecks;
+}
+
+interface AtsScore {
+  score: number;
+  feedback?: string[];
+  suggestions?: string[];
+  detailedIssues?: string[];
+  scoringFormula?: string;
+  breakdown?: Record<string, ScoreComponent>;
+}
+
+interface ExperienceItem {
+  text: string;
+  hasYearSignal?: boolean;
+}
+
+interface EducationItem {
+  text: string;
+}
+
+interface SectionQuality {
+  quantifiedBulletCount?: number;
+  actionVerbHits?: string[];
+  penaltyPoints?: number;
+  penalties?: string[];
+}
+
+interface AnalysisMeta {
+  roleProfile?: string;
+  roleProfileConfidence?: number;
+  scoringVersion?: string;
+  sectionQuality?: SectionQuality;
+}
+
+interface StructuredAnalysis {
+  matchingRequirements?: {
+    title?: string;
+    items?: string[];
+  };
+  missingRequirements?: {
+    title?: string;
+    items?: string[];
+  };
+  skillsAnalysis?: {
+    title?: string;
+    matchingSkills?: string[];
+    requiredSkills?: string[];
+    missingSkills?: string[];
+    summary?: string;
+  };
+  experienceAnalysis?: {
+    title?: string;
+    requiredExperience?: string;
+    currentExperience?: string;
+    status?: string;
+    assessment?: string;
+  };
+  educationEligibility?: {
+    title?: string;
+    requiredQualifications?: string[];
+    matchedQualifications?: string[];
+    status?: string;
+    assessment?: string;
+  };
+  finalVerdict?: {
+    title?: string;
+    fit?: string;
+    reason?: string;
+  };
+}
+
+interface ResumeData {
+  resumeText?: string;
+  atsScore?: AtsScore;
+  extractedData?: {
+    skills?: string[];
+    experience?: ExperienceItem[];
+    education?: EducationItem[];
+  };
+  keywordAnalysis?: {
+    presentKeywords?: string[];
+    missingKeywords?: string[];
+    coreMissingKeywords?: string[];
+  };
+  analysisMeta?: AnalysisMeta;
+  structuredAnalysis?: StructuredAnalysis;
+}
+
+interface ResumeAnalysisPayload {
+  data?: ResumeData | null;
+}
+
+interface UploadPayload {
+  data?: ResumeData;
+}
 
 export default function ResumePage() {
   const { isAuthenticated, user } = useAuth();
@@ -13,9 +116,22 @@ export default function ResumePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [resumeData, setResumeData] = useState<any>(null);
-  const [atsScore, setAtsScore] = useState<any>(null);
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [atsScore, setAtsScore] = useState<AtsScore | null>(null);
   const [jobDescription, setJobDescription] = useState('');
+
+  const loadResumeAnalysis = useCallback(async () => {
+    try {
+      const response = await apiClient.getResumeAnalysis(user?.id || 'demo-user');
+      if (response.data) {
+        const payload = response.data as ResumeAnalysisPayload;
+        setResumeData(payload?.data || null);
+        setAtsScore(payload?.data?.atsScore || null);
+      }
+    } catch {
+      console.log('No existing resume found');
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -24,19 +140,7 @@ export default function ResumePage() {
       // Load existing resume analysis
       loadResumeAnalysis();
     }
-  }, [isAuthenticated]);
-
-  const loadResumeAnalysis = async () => {
-    try {
-      const response = await apiClient.getResumeAnalysis(user?.id || 'demo-user');
-      if (response.data) {
-        setResumeData(response.data);
-        setAtsScore(response.data?.atsScore);
-      }
-    } catch (err) {
-      console.log('No existing resume found');
-    }
-  };
+  }, [isAuthenticated, loadResumeAnalysis, router]);
 
   const clearMessages = () => {
     setSuccessMessage('');
@@ -53,7 +157,7 @@ export default function ResumePage() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      setErrorMessage('Please select a PDF file');
+      setErrorMessage('Please select a resume file');
       return;
     }
 
@@ -63,10 +167,11 @@ export default function ResumePage() {
     try {
       const response = await apiClient.uploadResume(file, user?.id || 'demo-user');
       if (response.success) {
+        const payload = response.data as UploadPayload;
         setSuccessMessage('✅ Profile saved! Resume uploaded and analyzed successfully!');
         setFile(null);
-        setResumeData(response.data?.data);
-        setAtsScore(response.data?.data?.atsScore);
+        setResumeData(payload?.data ?? null);
+        setAtsScore(payload?.data?.atsScore ?? null);
         
         // Clear file input
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -95,15 +200,59 @@ export default function ResumePage() {
 
     setIsLoading(true);
     clearMessages();
+
+    const triggerDownload = (contentBase64: string, fileName: string, mimeType: string) => {
+      const binary = atob(contentBase64);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes], { type: mimeType || 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName || 'customized-resume.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    };
     
     try {
-      const response = await apiClient.customizeResume(jobDescription, '');
+      const response = await apiClient.customizeResume(
+        jobDescription,
+        '',
+        user?.id || 'demo-user',
+        resumeData?.resumeText || ''
+      );
       if (response.success) {
-        setSuccessMessage('✅ Resume customized successfully! Check your downloads.');
+        const payload = response.data as {
+          data?: {
+            download?: {
+              fileName?: string;
+              mimeType?: string;
+              contentBase64?: string;
+            };
+            summary?: string;
+          };
+        };
+
+        const downloadPayload = payload?.data?.download;
+        if (downloadPayload?.contentBase64) {
+          triggerDownload(
+            downloadPayload.contentBase64,
+            downloadPayload.fileName || 'customized-resume.txt',
+            downloadPayload.mimeType || 'text/plain'
+          );
+          setSuccessMessage('✅ Resume customized and downloaded successfully!');
+        } else {
+          setSuccessMessage(payload?.data?.summary || '✅ Resume customized successfully!');
+        }
       } else {
         setErrorMessage(response.error || 'Failed to customize');
       }
-    } catch (error) {
+    } catch {
       setErrorMessage('An error occurred');
     } finally {
       setIsLoading(false);
@@ -113,6 +262,7 @@ export default function ResumePage() {
   if (!isAuthenticated) {
     return null;
   }
+  const structured = resumeData?.structuredAnalysis;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -169,7 +319,7 @@ export default function ResumePage() {
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 hover:bg-blue-50 transition">
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.doc,.docx"
                     onChange={handleFileChange}
                     className="hidden"
                     id="fileInput"
@@ -177,9 +327,9 @@ export default function ResumePage() {
                   <label htmlFor="fileInput" className="cursor-pointer block">
                     <div className="text-5xl mb-4">📄</div>
                     <p className="text-gray-900 font-semibold mb-2 text-lg">
-                      {file ? `✅ ${file.name}` : 'Click to upload or drag PDF'}
+                      {file ? `✅ ${file.name}` : 'Click to upload your resume'}
                     </p>
-                    <p className="text-gray-600 text-sm">PDF format recommended (max 10MB)</p>
+                    <p className="text-gray-600 text-sm">PDF or DOCX format (max 10MB)</p>
                   </label>
                 </div>
 
@@ -199,99 +349,118 @@ export default function ResumePage() {
             <div>
               {atsScore ? (
                 <div className="space-y-8">
-                  {/* ATS Score Card */}
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-200">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">ATS Compatibility Score</h2>
-                      <div className="text-5xl font-bold text-blue-600">{atsScore.score}%</div>
-                    </div>
-                    
-                    {/* Score Bar */}
-                    <div className="w-full bg-gray-300 rounded-full h-4 overflow-hidden mb-6">
-                      <div 
-                        className={`h-full transition-all ${
-                          atsScore.score >= 80 ? 'bg-green-500' : 
-                          atsScore.score >= 60 ? 'bg-yellow-500' : 
-                          'bg-red-500'
-                        }`}
-                        style={{ width: `${atsScore.score}%` }}
-                      />
-                    </div>
+                  {structured && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-5">Structured Role Alignment Analysis</h2>
 
-                    {/* Feedback */}
-                    {atsScore.feedback && atsScore.feedback.length > 0 && (
-                      <div className="mb-6">
-                        <h3 className="font-semibold text-red-600 mb-3">Issues to Fix:</h3>
-                        <ul className="space-y-2">
-                          {atsScore.feedback.map((item: string, idx: number) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="text-red-500 mr-3 mt-1">❌</span>
-                              <span className="text-gray-700">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <section className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                          <h3 className="font-bold text-emerald-900 mb-2">
+                            {structured.matchingRequirements?.title || 'Matching Requirements (Strong Fit)'}
+                          </h3>
+                          <ul className="space-y-1 text-sm text-emerald-900">
+                            {(structured.matchingRequirements?.items || []).map((item, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span>•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                            {(structured.matchingRequirements?.items || []).length === 0 && (
+                              <li className="text-sm text-emerald-800">No strong-fit items detected yet.</li>
+                            )}
+                          </ul>
+                        </section>
+
+                        <section className="bg-rose-50 border border-rose-200 rounded-lg p-4">
+                          <h3 className="font-bold text-rose-900 mb-2">
+                            {structured.missingRequirements?.title || 'Missing Requirements (Gaps)'}
+                          </h3>
+                          <ul className="space-y-1 text-sm text-rose-900">
+                            {(structured.missingRequirements?.items || []).map((item, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span>•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                            {(structured.missingRequirements?.items || []).length === 0 && (
+                              <li className="text-sm text-rose-800">No major requirement gaps detected.</li>
+                            )}
+                          </ul>
+                        </section>
                       </div>
-                    )}
 
-                    {/* Suggestions */}
-                    {atsScore.suggestions && atsScore.suggestions.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-green-600 mb-3">Suggestions:</h3>
-                        <ul className="space-y-2">
-                          {atsScore.suggestions.map((item: string, idx: number) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="text-green-500 mr-3 mt-1">💡</span>
-                              <span className="text-gray-700">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Extracted Data */}
-                  {resumeData?.extractedData && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Skills */}
-                      {resumeData.extractedData.skills && resumeData.extractedData.skills.length > 0 && (
-                        <div className="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-600">
-                          <h3 className="font-bold text-lg text-gray-900 mb-4">🎯 Skills</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {resumeData.extractedData.skills.map((skill: string, idx: number) => (
-                              <span key={idx} className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+                        <section className="bg-sky-50 border border-sky-200 rounded-lg p-4">
+                          <h3 className="font-bold text-sky-900 mb-2">
+                            {structured.skillsAnalysis?.title || 'Skills Analysis'}
+                          </h3>
+                          <p className="text-sm text-sky-900 mb-2">{structured.skillsAnalysis?.summary}</p>
+                          <p className="text-xs font-semibold text-sky-800 mb-1">Skills I have (matched)</p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {(structured.skillsAnalysis?.matchingSkills || []).map((skill, idx) => (
+                              <span key={idx} className="px-2 py-1 rounded text-xs bg-sky-100 border border-sky-300 text-sky-900">
                                 {skill}
                               </span>
                             ))}
                           </div>
-                        </div>
-                      )}
+                          <p className="text-xs font-semibold text-sky-800 mb-1">Skills required but missing</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(structured.skillsAnalysis?.missingSkills || []).map((skill, idx) => (
+                              <span key={idx} className="px-2 py-1 rounded text-xs bg-white border border-rose-300 text-rose-800">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </section>
 
-                      {/* Experience Count */}
-                      {resumeData.extractedData.experience && (
-                        <div className="bg-green-50 rounded-lg p-6 border-l-4 border-green-600">
-                          <h3 className="font-bold text-lg text-gray-900 mb-4">💼 Experience</h3>
-                          <p className="text-3xl font-bold text-green-600">{resumeData.extractedData.experience.length}</p>
-                          <p className="text-gray-600">Work experiences found</p>
-                        </div>
-                      )}
+                        <section className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                          <h3 className="font-bold text-indigo-900 mb-2">
+                            {structured.experienceAnalysis?.title || 'Experience Analysis'}
+                          </h3>
+                          <p className="text-sm text-indigo-900">Required: {structured.experienceAnalysis?.requiredExperience || 'N/A'}</p>
+                          <p className="text-sm text-indigo-900">Current: {structured.experienceAnalysis?.currentExperience || 'N/A'}</p>
+                          <p className="text-sm text-indigo-900 mt-1 font-semibold">
+                            Status: {structured.experienceAnalysis?.status || 'N/A'}
+                          </p>
+                          <p className="text-sm text-indigo-800 mt-2">{structured.experienceAnalysis?.assessment}</p>
+                        </section>
+                      </div>
 
-                      {/* Education */}
-                      {resumeData.extractedData.education && (
-                        <div className="bg-purple-50 rounded-lg p-6 border-l-4 border-purple-600">
-                          <h3 className="font-bold text-lg text-gray-900 mb-4">🎓 Education</h3>
-                          <p className="text-3xl font-bold text-purple-600">{resumeData.extractedData.education.length}</p>
-                          <p className="text-gray-600">Degrees found</p>
-                        </div>
-                      )}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+                        <section className="bg-violet-50 border border-violet-200 rounded-lg p-4">
+                          <h3 className="font-bold text-violet-900 mb-2">
+                            {structured.educationEligibility?.title || 'Education Eligibility'}
+                          </h3>
+                          <p className="text-sm text-violet-900 font-semibold">
+                            Status: {structured.educationEligibility?.status || 'N/A'}
+                          </p>
+                          <p className="text-sm text-violet-800 mt-2">{structured.educationEligibility?.assessment}</p>
+                          <p className="text-xs font-semibold text-violet-800 mt-3 mb-1">Required qualifications</p>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {(structured.educationEligibility?.requiredQualifications || []).map((q, idx) => (
+                              <span key={idx} className="px-2 py-1 rounded text-xs bg-white border border-violet-300 text-violet-900">
+                                {q}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-xs font-semibold text-violet-800 mb-1">Matched qualifications</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(structured.educationEligibility?.matchedQualifications || []).map((q, idx) => (
+                              <span key={idx} className="px-2 py-1 rounded text-xs bg-violet-100 border border-violet-300 text-violet-900">
+                                {q}
+                              </span>
+                            ))}
+                          </div>
+                        </section>
 
-                      {/* Keywords */}
-                      {resumeData.keywordAnalysis?.presentKeywords && (
-                        <div className="bg-yellow-50 rounded-lg p-6 border-l-4 border-yellow-600">
-                          <h3 className="font-bold text-lg text-gray-900 mb-4">🔑 Keywords</h3>
-                          <p className="text-3xl font-bold text-yellow-600">{resumeData.keywordAnalysis.presentKeywords.length}</p>
-                          <p className="text-gray-600">Industry keywords detected</p>
-                        </div>
-                      )}
+                        <section className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                          <h3 className="font-bold text-amber-900 mb-2">
+                            {structured.finalVerdict?.title || 'Final Verdict'}
+                          </h3>
+                          <p className="text-xl font-bold text-amber-900">{structured.finalVerdict?.fit || 'N/A'}</p>
+                          <p className="text-sm text-amber-800 mt-2">{structured.finalVerdict?.reason}</p>
+                        </section>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -13,7 +13,7 @@ const protect = (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, "secretkey123");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "dev_jwt_secret");
 
     // Attach user info to request
     req.user = decoded;
@@ -24,4 +24,12 @@ const protect = (req, res, next) => {
   }
 };
 
-module.exports = protect;
+const requireRole = (allowedRoles = []) => (req, res, next) => {
+  if (!req.user || !allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden: insufficient role permissions" });
+  }
+
+  return next();
+};
+
+module.exports = { protect, requireRole };

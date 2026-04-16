@@ -28,11 +28,26 @@ export function Navbar() {
                 <Link href="/dashboard" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
                   Dashboard
                 </Link>
+                {user?.role === 'recruiter' ? (
+                  <Link href="/recruiter" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
+                    Recruiter Portal
+                  </Link>
+                ) : (
+                  <Link href="/jobs" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
+                    Jobs
+                  </Link>
+                )}
                 <Link href="/profile" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
                   Profile
                 </Link>
                 <Link href="/resume" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
                   Resume
+                </Link>
+                <Link href="/jobs" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
+                  Jobs
+                </Link>
+                <Link href="/recruiter/login" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
+                  Recruiter
                 </Link>
                 <Link href="/quiz" className="transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-sky-300">
                   Learn

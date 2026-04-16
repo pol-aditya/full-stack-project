@@ -19,10 +19,14 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
-    
-    const defaultHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
+    const defaultHeaders: HeadersInit = isFormData
+      ? {}
+      : {
+          'Content-Type': 'application/json',
+        };
 
     // Add auth token if available
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
@@ -39,18 +43,28 @@ export class ApiClient {
         },
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const isJsonResponse = contentType.includes('application/json');
+      const parsedBody = isJsonResponse ? await response.json() : await response.text();
 
       if (!response.ok) {
+        let errorMessage = `Request failed with status ${response.status}`;
+
+        if (isJsonResponse && parsedBody && typeof parsedBody === 'object') {
+          errorMessage = (parsedBody as any).message || (parsedBody as any).error || errorMessage;
+        } else if (typeof parsedBody === 'string' && parsedBody.trim()) {
+          errorMessage = parsedBody.slice(0, 200);
+        }
+
         return {
           success: false,
-          error: data.message || 'An error occurred',
+          error: errorMessage,
         };
       }
 
       return {
         success: true,
-        data,
+        data: parsedBody as T,
       };
     } catch (error) {
       return {
@@ -131,10 +145,15 @@ export class ApiClient {
     return this.makeRequest('/ats-score');
   }
 
-  async customizeResume(jobDescription: string, resumeId: string) {
+  async customizeResume(
+    jobDescription: string,
+    resumeId: string,
+    userId: string = 'demo-user',
+    resumeText: string = ''
+  ) {
     return this.makeRequest('/resume/customize', {
       method: 'POST',
-      body: JSON.stringify({ jobDescription, resumeId }),
+      body: JSON.stringify({ jobDescription, resumeId, userId, resumeText }),
     });
   }
 
@@ -191,6 +210,71 @@ export class ApiClient {
   // Domain analysis endpoints
   async getDomainAnalysis(domain: string) {
     return this.makeRequest(`/domain/analysis?domain=${encodeURIComponent(domain)}`);
+  }
+
+  // Recruiter endpoints
+  async recruiterRegister(name: string, email: string, password: string) {
+    return this.makeRequest('/recruiter/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    });
+  }
+
+  async recruiterLogin(email: string, password: string) {
+    return this.makeRequest('/recruiter/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async recruiterPostJob(data: {
+    title: string;
+    company: string;
+    location: string;
+    jobType: string;
+    experienceLevel: string;
+    salaryRange?: string;
+    skillsRequired?: string;
+    description: string;
+    applicationDeadline?: string;
+  }) {
+    return this.makeRequest('/recruiter/jobs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async recruiterGetJobs() {
+    return this.makeRequest('/recruiter/jobs');
+  }
+
+  async recruiterGetApplications(jobId: string | number) {
+    return this.makeRequest(`/recruiter/jobs/${jobId}/applications`);
+  }
+
+  // Public/employee jobs portal endpoints
+  async getJobs() {
+    return this.makeRequest('/jobs');
+  }
+
+  async getJobById(jobId: string | number) {
+    return this.makeRequest(`/jobs/${jobId}`);
+  }
+
+  async applyForJob(
+    jobId: string | number,
+    payload: {
+      fullName: string;
+      email: string;
+      phone?: string;
+      resumeLink?: string;
+      coverLetter?: string;
+    }
+  ) {
+    return this.makeRequest(`/jobs/${jobId}/apply`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
 
   // Interview prep endpoints

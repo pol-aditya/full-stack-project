@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const [accountType, setAccountType] = useState<'employee' | 'recruiter'>('employee');
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -29,11 +30,11 @@ export default function LoginPage() {
 
     try {
       if (isLogin) {
-        await login(formData.email, formData.password);
+        await login(formData.email, formData.password, accountType);
       } else {
-        await register(formData.email, formData.password, formData.name);
+        await register(formData.email, formData.password, formData.name, accountType);
       }
-      router.push('/dashboard');
+      router.push(accountType === 'recruiter' ? '/recruiter' : '/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -62,6 +63,36 @@ export default function LoginPage() {
         )}
 
         {/* Form */}
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-300">
+            Login As
+          </p>
+          <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-950">
+            <button
+              type="button"
+              onClick={() => setAccountType('employee')}
+              className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                accountType === 'employee'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-700 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800'
+              }`}
+            >
+              Employee
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType('recruiter')}
+              className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                accountType === 'recruiter'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-700 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800'
+              }`}
+            >
+              Recruiter
+            </button>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
@@ -159,6 +190,9 @@ export default function LoginPage() {
             {isLogin
               ? 'New here? Choose Sign Up to create an account.'
               : 'Already registered? Switch back to Login.'}
+          </p>
+          <p className="mt-2 text-center text-xs text-gray-500 dark:text-slate-400">
+            Current role: {accountType === 'recruiter' ? 'Recruiter account' : 'Employee account'}
           </p>
         </div>
 

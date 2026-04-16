@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { RecruiterAuthProvider } from "@/contexts/RecruiterAuthContext";
 import { Navbar } from "@/components/Navbar";
 
 const geistSans = Geist({
@@ -27,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-slate-950`}>
+      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-slate-950`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (function () {
@@ -41,11 +42,12 @@ export default function RootLayout({
           `}
         </Script>
         <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <footer className="bg-gray-800 text-white py-8 mt-12 transition-colors dark:bg-slate-900 dark:text-slate-100">
+          <RecruiterAuthProvider>
+            <Navbar />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <footer className="bg-gray-800 text-white py-8 mt-12 transition-colors dark:bg-slate-900 dark:text-slate-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
@@ -73,7 +75,8 @@ export default function RootLayout({
                 <p>&copy; 2024 JobSeeker AI. All rights reserved.</p>
               </div>
             </div>
-          </footer>
+            </footer>
+          </RecruiterAuthProvider>
         </AuthProvider>
       </body>
     </html>
