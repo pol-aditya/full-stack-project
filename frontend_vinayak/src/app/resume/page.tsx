@@ -119,6 +119,8 @@ export default function ResumePage() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [atsScore, setAtsScore] = useState<AtsScore | null>(null);
   const [jobDescription, setJobDescription] = useState('');
+  const [roleTitle, setRoleTitle] = useState('');
+  const [uploadJD, setUploadJD] = useState('');
 
   const loadResumeAnalysis = useCallback(async () => {
     try {
@@ -137,7 +139,6 @@ export default function ResumePage() {
     if (!isAuthenticated) {
       router.push('/login');
     } else {
-      // Load existing resume analysis
       loadResumeAnalysis();
     }
   }, [isAuthenticated, loadResumeAnalysis, router]);
@@ -165,15 +166,22 @@ export default function ResumePage() {
     clearMessages();
     
     try {
-      const response = await apiClient.uploadResume(file, user?.id || 'demo-user');
+      const response = await apiClient.uploadResume(
+        file,
+        user?.id || 'demo-user',
+        roleTitle,
+        uploadJD
+      );
       if (response.success) {
         const payload = response.data as UploadPayload;
-        setSuccessMessage('✅ Profile saved! Resume uploaded and analyzed successfully!');
+        const msg = uploadJD.trim()
+          ? '✅ Resume uploaded and analyzed against job description!'
+          : '✅ Profile saved! Resume uploaded and analyzed successfully!';
+        setSuccessMessage(msg);
         setFile(null);
         setResumeData(payload?.data ?? null);
         setAtsScore(payload?.data?.atsScore ?? null);
         
-        // Clear file input
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
         
@@ -333,12 +341,47 @@ export default function ResumePage() {
                   </label>
                 </div>
 
+                {/* Optional JD Fields */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-700 mb-1">📋 Optional: Add Job Details for better ATS scoring</p>
+                  <p className="text-xs text-gray-500 mb-4">Providing a job description enables weighted scoring (Skills 40% + Experience 20% + Keywords 20% + Formatting 10% + Projects 10%)</p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="roleTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                        Role / Job Title <span className="text-gray-400">(optional)</span>
+                      </label>
+                      <input
+                        id="roleTitle"
+                        type="text"
+                        value={roleTitle}
+                        onChange={(e) => setRoleTitle(e.target.value)}
+                        placeholder="e.g. Backend Engineer, Full Stack Developer..."
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="uploadJD" className="block text-sm font-medium text-gray-700 mb-1">
+                        Job Description <span className="text-gray-400">(optional)</span>
+                      </label>
+                      <textarea
+                        id="uploadJD"
+                        value={uploadJD}
+                        onChange={(e) => setUploadJD(e.target.value)}
+                        placeholder="Paste the job description here for a detailed ATS match analysis..."
+                        rows={5}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={isLoading || !file}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-lg transition"
                 >
-                  {isLoading ? '⏳ Analyzing...' : '🚀 Upload & Analyze'}
+                  {isLoading ? '⏳ Analyzing...' : uploadJD.trim() ? '🎯 Upload & Analyze vs JD' : '🚀 Upload & Analyze'}
                 </button>
               </form>
             </div>
@@ -348,69 +391,113 @@ export default function ResumePage() {
           {selectedTab === 'analyzer' && (
             <div>
               {atsScore ? (
-                <div className="space-y-8">
-                  {structured && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-5">Structured Role Alignment Analysis</h2>
+                <div className="space-y-6">
+                  {/* Overall Score Card */}
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold mb-1">ATS Score</h2>
+                        <p className="text-blue-100 text-sm">{atsScore.scoringFormula || 'Weighted scoring'}</p>
+                      </div>
+                      <div className="text-6xl font-black">{atsScore.score}%</div>
+                    </div>
+                    {atsScore.feedback && atsScore.feedback.length > 0 && (
+                      <div className="mt-4 space-y-1">
+                        {atsScore.feedback.map((f, i) => (
+                          <p key={i} className="text-sm text-blue-100">• {f}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
+                  {/* Score Breakdown Bars */}
+                  {atsScore.breakdown && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Score Breakdown</h3>
+                      <div className="space-y-4">
+                        {Object.entries(atsScore.breakdown).map(([key, comp]) => {
+                          const component = comp as ScoreComponent;
+                          const labels: Record<string, string> = {
+                            skillsMatch: '🎯 Skills Match',
+                            experienceMatch: '💼 Experience Match',
+                            keywordMatch: '🔑 Keyword Match',
+                            formatting: '📝 Formatting',
+                            projects: '🚀 Projects',
+                            topRoleAlignment: '🎯 Role Alignment',
+                            parseabilityCompleteness: '📝 Parseability',
+                          };
+                          const label = labels[key] || key;
+                          const barColor = component.score >= 70 ? 'bg-emerald-500' : component.score >= 40 ? 'bg-amber-500' : 'bg-red-500';
+                          return (
+                            <div key={key}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="font-medium text-gray-700">{label} <span className="text-gray-400">({component.weight}%)</span></span>
+                                <span className="font-bold text-gray-900">{component.score}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-3">
+                                <div className={`${barColor} h-3 rounded-full transition-all duration-500`} style={{ width: `${component.score}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Structured Analysis */}
+                  {structured && (
+                    <div className="space-y-5">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <section className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                           <h3 className="font-bold text-emerald-900 mb-2">
-                            {structured.matchingRequirements?.title || 'Matching Requirements (Strong Fit)'}
+                            {structured.matchingRequirements?.title || 'Matched Skills'}
                           </h3>
                           <ul className="space-y-1 text-sm text-emerald-900">
                             {(structured.matchingRequirements?.items || []).map((item, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <span>•</span>
-                                <span>{item}</span>
-                              </li>
+                              <li key={idx}>• {item}</li>
                             ))}
                             {(structured.matchingRequirements?.items || []).length === 0 && (
-                              <li className="text-sm text-emerald-800">No strong-fit items detected yet.</li>
+                              <li className="text-emerald-800">No matched items yet.</li>
                             )}
                           </ul>
                         </section>
 
                         <section className="bg-rose-50 border border-rose-200 rounded-lg p-4">
                           <h3 className="font-bold text-rose-900 mb-2">
-                            {structured.missingRequirements?.title || 'Missing Requirements (Gaps)'}
+                            {structured.missingRequirements?.title || 'Missing Skills'}
                           </h3>
                           <ul className="space-y-1 text-sm text-rose-900">
                             {(structured.missingRequirements?.items || []).map((item, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <span>•</span>
-                                <span>{item}</span>
-                              </li>
+                              <li key={idx}>• {item}</li>
                             ))}
                             {(structured.missingRequirements?.items || []).length === 0 && (
-                              <li className="text-sm text-rose-800">No major requirement gaps detected.</li>
+                              <li className="text-rose-800">No major gaps detected.</li>
                             )}
                           </ul>
                         </section>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <section className="bg-sky-50 border border-sky-200 rounded-lg p-4">
                           <h3 className="font-bold text-sky-900 mb-2">
                             {structured.skillsAnalysis?.title || 'Skills Analysis'}
                           </h3>
                           <p className="text-sm text-sky-900 mb-2">{structured.skillsAnalysis?.summary}</p>
-                          <p className="text-xs font-semibold text-sky-800 mb-1">Skills I have (matched)</p>
-                          <div className="flex flex-wrap gap-2 mb-3">
+                          <div className="flex flex-wrap gap-1.5 mb-2">
                             {(structured.skillsAnalysis?.matchingSkills || []).map((skill, idx) => (
-                              <span key={idx} className="px-2 py-1 rounded text-xs bg-sky-100 border border-sky-300 text-sky-900">
-                                {skill}
-                              </span>
+                              <span key={idx} className="px-2 py-0.5 rounded text-xs bg-sky-100 border border-sky-300 text-sky-900">{skill}</span>
                             ))}
                           </div>
-                          <p className="text-xs font-semibold text-sky-800 mb-1">Skills required but missing</p>
-                          <div className="flex flex-wrap gap-2">
-                            {(structured.skillsAnalysis?.missingSkills || []).map((skill, idx) => (
-                              <span key={idx} className="px-2 py-1 rounded text-xs bg-white border border-rose-300 text-rose-800">
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
+                          {(structured.skillsAnalysis?.missingSkills || []).length > 0 && (
+                            <>
+                              <p className="text-xs font-semibold text-sky-800 mb-1 mt-2">Missing:</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {(structured.skillsAnalysis?.missingSkills || []).map((skill, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 rounded text-xs bg-white border border-rose-300 text-rose-800">{skill}</span>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </section>
 
                         <section className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
@@ -419,38 +506,18 @@ export default function ResumePage() {
                           </h3>
                           <p className="text-sm text-indigo-900">Required: {structured.experienceAnalysis?.requiredExperience || 'N/A'}</p>
                           <p className="text-sm text-indigo-900">Current: {structured.experienceAnalysis?.currentExperience || 'N/A'}</p>
-                          <p className="text-sm text-indigo-900 mt-1 font-semibold">
-                            Status: {structured.experienceAnalysis?.status || 'N/A'}
-                          </p>
+                          <p className="text-sm text-indigo-900 mt-1 font-semibold">Status: {structured.experienceAnalysis?.status || 'N/A'}</p>
                           <p className="text-sm text-indigo-800 mt-2">{structured.experienceAnalysis?.assessment}</p>
                         </section>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <section className="bg-violet-50 border border-violet-200 rounded-lg p-4">
                           <h3 className="font-bold text-violet-900 mb-2">
-                            {structured.educationEligibility?.title || 'Education Eligibility'}
+                            {structured.educationEligibility?.title || 'Education'}
                           </h3>
-                          <p className="text-sm text-violet-900 font-semibold">
-                            Status: {structured.educationEligibility?.status || 'N/A'}
-                          </p>
-                          <p className="text-sm text-violet-800 mt-2">{structured.educationEligibility?.assessment}</p>
-                          <p className="text-xs font-semibold text-violet-800 mt-3 mb-1">Required qualifications</p>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {(structured.educationEligibility?.requiredQualifications || []).map((q, idx) => (
-                              <span key={idx} className="px-2 py-1 rounded text-xs bg-white border border-violet-300 text-violet-900">
-                                {q}
-                              </span>
-                            ))}
-                          </div>
-                          <p className="text-xs font-semibold text-violet-800 mb-1">Matched qualifications</p>
-                          <div className="flex flex-wrap gap-2">
-                            {(structured.educationEligibility?.matchedQualifications || []).map((q, idx) => (
-                              <span key={idx} className="px-2 py-1 rounded text-xs bg-violet-100 border border-violet-300 text-violet-900">
-                                {q}
-                              </span>
-                            ))}
-                          </div>
+                          <p className="text-sm text-violet-900 font-semibold">Status: {structured.educationEligibility?.status || 'N/A'}</p>
+                          <p className="text-sm text-violet-800 mt-1">{structured.educationEligibility?.assessment}</p>
                         </section>
 
                         <section className="bg-amber-50 border border-amber-200 rounded-lg p-4">
@@ -461,6 +528,21 @@ export default function ResumePage() {
                           <p className="text-sm text-amber-800 mt-2">{structured.finalVerdict?.reason}</p>
                         </section>
                       </div>
+                    </div>
+                  )}
+
+                  {/* AI Suggestions */}
+                  {atsScore.suggestions && atsScore.suggestions.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                      <h3 className="font-bold text-blue-900 mb-3">💡 AI Suggestions</h3>
+                      <ul className="space-y-2">
+                        {atsScore.suggestions.map((s, i) => (
+                          <li key={i} className="text-sm text-blue-900 flex items-start gap-2">
+                            <span className="text-blue-500 mt-0.5">→</span>
+                            <span>{s}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>

@@ -109,10 +109,16 @@ export class ApiClient {
   }
 
   // Resume endpoints
-  async uploadResume(file: File, userId: string = 'demo-user') {
+  async uploadResume(file: File, userId: string = 'demo-user', roleTitle: string = '', jobDescription: string = '') {
     const formData = new FormData();
     formData.append('resume', file);
     formData.append('userId', userId);
+    if (roleTitle.trim()) {
+      formData.append('roleTitle', roleTitle.trim());
+    }
+    if (jobDescription.trim()) {
+      formData.append('jobDescription', jobDescription.trim());
+    }
     return this.makeRequest('/upload-resume', {
       method: 'POST',
       body: formData,

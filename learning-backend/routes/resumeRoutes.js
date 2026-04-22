@@ -135,6 +135,57 @@ const SKILL_ONTOLOGY = {
   softSkills: ["communication", "leadership", "stakeholder", "collaboration", "problem solving"],
 };
 
+const SKILL_ALIASES = {
+  ml: "machine learning",
+  ai: "artificial intelligence",
+  nlp: "natural language processing",
+  js: "javascript",
+  ts: "typescript",
+  py: "python",
+  k8s: "kubernetes",
+  tf: "tensorflow",
+  dl: "deep learning",
+  "react.js": "react",
+  reactjs: "react",
+  "node.js": "node",
+  nodejs: "node",
+  "vue.js": "vue",
+  vuejs: "vue",
+  "angular.js": "angular",
+  angularjs: "angular",
+  "next.js": "next",
+  nextjs: "next",
+  mongo: "mongodb",
+  postgres: "postgresql",
+  gke: "kubernetes",
+  eks: "kubernetes",
+  ec2: "aws",
+  s3: "aws",
+  lambda: "aws",
+  ci: "ci/cd",
+  cd: "ci/cd",
+  "c#": "csharp",
+  dotnet: ".net",
+  "asp.net": ".net",
+  scss: "css",
+  sass: "css",
+  less: "css",
+  fastapi: "python",
+  flask: "python",
+  springboot: "spring",
+  "spring boot": "spring",
+};
+
+const normalizeSkillText = (text) => {
+  let normalized = normalizeText(text);
+  Object.entries(SKILL_ALIASES).forEach(([alias, canonical]) => {
+    const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`\\b${escapedAlias}\\b`, "gi");
+    normalized = normalized.replace(pattern, canonical);
+  });
+  return normalized;
+};
+
 const ROLE_PROFILES = [
   {
     id: "backend-engineer",
@@ -624,6 +675,77 @@ const splitResumeLines = (resumeText) =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const calculateProjectScore = (resumeText, jobDescription) => {
+  const resume = normalizeSkillText(resumeText);
+  const jd = normalizeSkillText(jobDescription);
+
+  let score = 0;
+  const details = [];
+
+  // Check if projects section exists
+  const hasProjectSection = /projects?|portfolio|github|open source/i.test(resumeText);
+  if (hasProjectSection) {
+    score += 30;
+    details.push("Projects section detected.");
+  } else {
+    details.push("No projects section found.");
+  }
+
+  // Extract JD technologies and check against resume projects area
+  const jdTokens = tokenize(jd);
+  const allOntologySkills = Object.values(SKILL_ONTOLOGY).flat();
+  const jdTechKeywords = jdTokens.filter(
+    (token) => allOntologySkills.some((skill) => skill.includes(token) || token.includes(skill))
+  );
+  const uniqueJdTech = Array.from(new Set(jdTechKeywords));
+
+  if (uniqueJdTech.length > 0) {
+    const matchedTech = uniqueJdTech.filter((tech) => resume.includes(tech));
+    const techCoverage = matchedTech.length / uniqueJdTech.length;
+    score += Math.round(techCoverage * 40);
+    details.push(`Project tech match: ${matchedTech.length}/${uniqueJdTech.length} technologies.`);
+  } else {
+    score += 20;
+    details.push("No specific tech requirements detected in JD.");
+  }
+
+  // Check for quantified project outcomes
+  const lines = splitResumeLines(resumeText);
+  const projectAreaLines = [];
+  let inProjectSection = false;
+  for (const line of lines) {
+    if (/projects?|portfolio/i.test(line)) {
+      inProjectSection = true;
+      continue;
+    }
+    if (inProjectSection && /^(experience|education|skills|certifications?|work history)/i.test(line)) {
+      break;
+    }
+    if (inProjectSection) {
+      projectAreaLines.push(line);
+    }
+  }
+
+  const quantifiedProjectLines = projectAreaLines.filter(
+    (line) => /\d+%|\d+x|\d+\s*(users?|requests?|ms|seconds?|minutes?)|reduced|improved|increased|optimized/i.test(line)
+  );
+
+  if (quantifiedProjectLines.length >= 2) {
+    score += 30;
+    details.push("Strong quantified project outcomes found.");
+  } else if (quantifiedProjectLines.length >= 1) {
+    score += 15;
+    details.push("Some quantified project outcomes found.");
+  } else if (projectAreaLines.length > 0) {
+    score += 5;
+    details.push("Projects listed but lack quantified outcomes.");
+  } else {
+    details.push("No project details with measurable impact found.");
+  }
+
+  return { score: clamp(score), details };
+};
+
 const extractExperienceEntries = (resumeText) => {
   const lines = splitResumeLines(resumeText);
   const experiencePattern = /(engineer|developer|intern|manager|analyst|consultant|lead|architect|specialist)/i;
@@ -793,6 +915,235 @@ const buildAtsEvaluation = async (resumeText) => {
   };
 };
 
+const generateLlmSuggestions = async (resumeText, jobDescription, scoreBreakdown) => {
+  try {
+    const systemPrompt =
+      "You are a resume improvement advisor. Based on the ATS score breakdown provided, give actionable suggestions to improve the resume for the given job. Return strict JSON: { \"suggestions\": [string], \"missingSkillAdvice\": string, \"overallAdvice\": string }. Keep suggestions concise (max 5 items).";
+    const userPrompt = `ATS Score Breakdown:\n${JSON.stringify(scoreBreakdown, null, 2)}\n\nJob Description:\n${jobDescription.slice(0, 1500)}\n\nResume (first 1500 chars):\n${resumeText.slice(0, 1500)}`;
+
+    const output = await callOpenRouter({
+      systemPrompt,
+      userPrompt,
+      temperature: 0.3,
+      maxTokens: 500,
+    });
+
+    const parsed = safeJsonParse(output);
+    if (parsed && Array.isArray(parsed.suggestions)) {
+      return {
+        suggestions: parsed.suggestions.slice(0, 5),
+        missingSkillAdvice: parsed.missingSkillAdvice || "",
+        overallAdvice: parsed.overallAdvice || "",
+      };
+    }
+  } catch (_error) {
+    // LLM is optional — fall through to default suggestions
+  }
+
+  return {
+    suggestions: [
+      "Add more keywords from the job description to your resume.",
+      "Quantify your achievements with numbers and percentages.",
+      "Ensure your skills section matches the JD requirements.",
+    ],
+    missingSkillAdvice: "Review the missing skills list and add relevant ones you possess.",
+    overallAdvice: "Tailor your resume specifically for this role.",
+  };
+};
+
+const buildAtsEvaluationWithJD = async (resumeText, jobDescription, roleTitle = "") => {
+  const normalizedResume = normalizeSkillText(resumeText);
+  const normalizedJD = normalizeSkillText(jobDescription);
+  const fullJD = roleTitle ? `${roleTitle}\n${normalizedJD}` : normalizedJD;
+
+  // --- 1. Skills Match (40%) ---
+  const skillsOntology = calculateSkillsOntologyMatch(normalizedResume, fullJD);
+  const ontologySkillSets = getOntologySkillSets(normalizedResume, fullJD);
+  const skillsScore = skillsOntology.score;
+
+  // --- 2. Experience Match (20%) ---
+  const experienceResult = calculateExperienceRelevance(resumeText, jobDescription);
+  const experienceScore = experienceResult.score;
+
+  // --- 3. Keyword Match (20%) ---
+  const roleProfile = detectRoleProfile(fullJD);
+  const keywordResult = calculateKeywordMatch(normalizedResume, fullJD, roleProfile);
+  const keywordScore = keywordResult.score;
+
+  // --- 4. Formatting Score (10%) ---
+  const parseability = calculateParseabilityCompleteness(resumeText);
+  const sectionQuality = assessSectionQuality(resumeText, roleProfile);
+  const formatScore = clamp(parseability.score - sectionQuality.penaltyPoints);
+
+  // --- 5. Projects Score (10%) ---
+  const projectResult = calculateProjectScore(resumeText, jobDescription);
+  const projectScore = projectResult.score;
+
+  // --- Weighted Final Score ---
+  const finalScore = Math.round(
+    skillsScore * 0.4 +
+    experienceScore * 0.2 +
+    keywordScore * 0.2 +
+    formatScore * 0.1 +
+    projectScore * 0.1
+  );
+
+  const scoreBreakdown = {
+    skillsMatch: {
+      weight: 40,
+      score: Math.round(skillsScore),
+      weightedContribution: Number((skillsScore * 0.4).toFixed(2)),
+      matchedSkills: ontologySkillSets.matchingSkills,
+      missingSkills: ontologySkillSets.missingSkills,
+      requiredSkills: ontologySkillSets.requiredSkills,
+    },
+    experienceMatch: {
+      weight: 20,
+      score: Math.round(experienceScore),
+      weightedContribution: Number((experienceScore * 0.2).toFixed(2)),
+      requiredYears: experienceResult.requiredYears,
+      resumeYears: experienceResult.resumeYears,
+    },
+    keywordMatch: {
+      weight: 20,
+      score: Math.round(keywordScore),
+      weightedContribution: Number((keywordScore * 0.2).toFixed(2)),
+      presentKeywords: keywordResult.presentKeywords,
+      missingKeywords: keywordResult.missingKeywords,
+      coreMissingKeywords: keywordResult.coreMissingKeywords,
+    },
+    formatting: {
+      weight: 10,
+      score: Math.round(formatScore),
+      weightedContribution: Number((formatScore * 0.1).toFixed(2)),
+      checks: parseability.checks,
+      penalties: sectionQuality.penalties,
+    },
+    projects: {
+      weight: 10,
+      score: Math.round(projectScore),
+      weightedContribution: Number((projectScore * 0.1).toFixed(2)),
+      details: projectResult.details,
+    },
+  };
+
+  // --- LLM Suggestions (NOT scoring) ---
+  const llmSuggestions = await generateLlmSuggestions(resumeText, jobDescription, scoreBreakdown);
+
+  // --- Education Info (for display) ---
+  const educationMatch = calculateEducationMatch(resumeText, jobDescription);
+  const extractedExperience = extractExperienceEntries(resumeText);
+  const extractedEducation = extractEducationEntries(resumeText);
+
+  // --- All missing skills ---
+  const allMissingSkills = Array.from(
+    new Set([
+      ...ontologySkillSets.missingSkills,
+      ...keywordResult.coreMissingKeywords,
+    ])
+  ).slice(0, 15);
+
+  // --- Feedback & detailed issues ---
+  const feedback = [];
+  if (skillsScore >= 70) feedback.push(`Strong skills alignment (${Math.round(skillsScore)}%).`);
+  else if (skillsScore >= 40) feedback.push(`Moderate skills match (${Math.round(skillsScore)}%). Add missing skills.`);
+  else feedback.push(`Low skills match (${Math.round(skillsScore)}%). Significant skill gaps detected.`);
+
+  if (experienceScore >= 80) feedback.push("Experience level matches the job requirements.");
+  else if (experienceResult.requiredYears) feedback.push(`Experience gap: JD requires ${experienceResult.requiredYears}+ years, resume shows ~${experienceResult.resumeYears} years.`);
+
+  const detailedIssues = [];
+  if (formatScore < 70) {
+    const failedChecks = Object.entries(parseability.checks)
+      .filter(([, passed]) => !passed)
+      .map(([name]) => name);
+    detailedIssues.push(`Formatting gaps: ${failedChecks.join(", ") || "section quality penalties"}.`);
+  }
+  if (sectionQuality.penalties.length > 0) {
+    detailedIssues.push(...sectionQuality.penalties);
+  }
+
+  return {
+    atsScore: {
+      score: clamp(finalScore),
+      feedback,
+      suggestions: llmSuggestions.suggestions,
+      detailedIssues,
+      missingSkillAdvice: llmSuggestions.missingSkillAdvice,
+      overallAdvice: llmSuggestions.overallAdvice,
+      scoringFormula: "Score = Skills(40%) + Experience(20%) + Keywords(20%) + Formatting(10%) + Projects(10%)",
+      breakdown: scoreBreakdown,
+    },
+    extractedData: {
+      skills: ontologySkillSets.matchingSkills,
+      experience: extractedExperience,
+      education: extractedEducation,
+    },
+    keywordAnalysis: {
+      presentKeywords: keywordResult.presentKeywords,
+      missingKeywords: keywordResult.missingKeywords,
+      coreMissingKeywords: keywordResult.coreMissingKeywords,
+    },
+    analysisMeta: {
+      roleProfile: roleProfile.id,
+      roleProfileConfidence: roleProfile.confidence,
+      sectionQuality,
+      scoringVersion: "weighted-jd-v1",
+      roleTitle: roleTitle || null,
+      hasJobDescription: true,
+    },
+    structuredAnalysis: {
+      matchingRequirements: {
+        title: "Skills You Have (Matched)",
+        items: ontologySkillSets.matchingSkills.map((s) => `✔ ${s}`),
+      },
+      missingRequirements: {
+        title: "Skills & Keywords Missing",
+        items: allMissingSkills.map((s) => `✘ ${s}`),
+      },
+      skillsAnalysis: {
+        title: "Skills Analysis (40% weight)",
+        matchingSkills: ontologySkillSets.matchingSkills,
+        requiredSkills: ontologySkillSets.requiredSkills,
+        missingSkills: ontologySkillSets.missingSkills,
+        summary: `Matched ${ontologySkillSets.matchingSkills.length} of ${ontologySkillSets.requiredSkills.length} required skills from the job description.`,
+      },
+      experienceAnalysis: {
+        title: "Experience Analysis (20% weight)",
+        requiredExperience: experienceResult.requiredYears ? `${experienceResult.requiredYears}+ years` : "Not specified in JD",
+        currentExperience: `${experienceResult.resumeYears} years (detected)`,
+        status: experienceScore >= 80 ? "Meets Requirements" : experienceScore >= 50 ? "Partially Meets" : "Below Requirements",
+        assessment:
+          experienceScore >= 80
+            ? "Your experience level matches the job requirements."
+            : experienceScore >= 50
+            ? "Your experience partially meets requirements. Highlight relevant project experience."
+            : "Consider emphasizing internships, projects, and any relevant experience.",
+      },
+      educationEligibility: {
+        title: "Education Eligibility",
+        requiredQualifications: educationMatch.requiredDegrees,
+        matchedQualifications: educationMatch.matchedDegrees,
+        status: educationMatch.score >= 70 ? "Eligible" : educationMatch.score >= 40 ? "Partially Eligible" : "Review Required",
+        assessment:
+          educationMatch.score >= 70
+            ? "Education requirements are met."
+            : "Some education requirements may not be matched. Verify your qualifications.",
+      },
+      finalVerdict: {
+        title: "Final Verdict",
+        fit: finalScore >= 75 ? "Strong fit" : finalScore >= 55 ? "Moderate fit" : "Weak fit",
+        reason:
+          finalScore >= 75
+            ? `Strong match at ${finalScore}%. Your resume aligns well with this job.`
+            : finalScore >= 55
+            ? `Moderate match at ${finalScore}%. Address the missing skills and keywords to improve.`
+            : `Weak match at ${finalScore}%. Significant gaps found. Review suggestions to improve your resume.`,
+      },
+    },
+  };
+};
+
 const buildFallbackCustomizedResume = (resumeText, jobDescription) => {
   const jdKeywords = extractTopKeywords(jobDescription, 12);
   const normalizedResume = normalizeText(resumeText);
@@ -911,6 +1262,8 @@ router.post("/upload-resume", upload.single("resume"), async (req, res) => {
   }
 
   const userId = req.body?.userId || "demo-user";
+  const jobDescription = String(req.body?.jobDescription || "").trim();
+  const roleTitle = String(req.body?.roleTitle || "").trim();
 
   try {
     const resumeText = await parseResumeBuffer(req.file);
@@ -921,13 +1274,19 @@ router.post("/upload-resume", upload.single("resume"), async (req, res) => {
       });
     }
 
-    const evaluation = await buildAtsEvaluation(resumeText);
+    // Use weighted JD scoring if job description is provided, otherwise role-alignment
+    const evaluation = jobDescription
+      ? await buildAtsEvaluationWithJD(resumeText, jobDescription, roleTitle)
+      : await buildAtsEvaluation(resumeText);
+
     const analysisRecord = {
       fileName: req.file.originalname,
       size: req.file.size,
       uploadedAt: new Date().toISOString(),
       model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
       resumeTextLength: resumeText.length,
+      hasJobDescription: !!jobDescription,
+      roleTitle: roleTitle || null,
       ...evaluation,
     };
 
@@ -935,12 +1294,14 @@ router.post("/upload-resume", upload.single("resume"), async (req, res) => {
       userId,
       fileName: req.file.originalname,
       resumeText,
-      jobDescription: "",
+      jobDescription: jobDescription || "",
       analysis: analysisRecord,
     });
 
     return res.json({
-      message: "Resume uploaded and analyzed successfully",
+      message: jobDescription
+        ? "Resume uploaded and analyzed against job description"
+        : "Resume uploaded and analyzed successfully",
       data: {
         ...analysisRecord,
       },

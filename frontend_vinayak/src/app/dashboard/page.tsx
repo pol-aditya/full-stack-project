@@ -70,7 +70,7 @@ export default function DashboardPage() {
       icon: '🎯',
       title: 'Job Recommendations',
       desc: 'Get personalized job recommendations',
-      href: '/dashboard',
+      href: '/recommendations',
       color: 'from-red-400 to-red-600'
     },
     {
